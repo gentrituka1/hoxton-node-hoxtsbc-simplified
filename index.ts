@@ -61,17 +61,21 @@ app.post("/login", async (req, res) => {
     where: { email: req.body.email } || { username: req.body.username },
   });
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
-    res.send(user);
+    res.send({user, token: getToken(user.id)});
   } else {
-    res.status(401).send("Invalid credentials. Email or password is incorrect");
+    res.status(401).send({error: "Invalid credentials. Email or password is incorrect"});
   }
 });
 
 app.get("/transactions", async (req, res) => {
-  const transactions = await prisma.transaction.findMany({
-    include: { user: true },
-  });
-  res.send(transactions);
+    try {
+    // @ts-ignore
+  const user = await getCurrentUser(req.headers.authorization);
+    res.send(user?.transactions);
+    } catch (error) {
+    //@ts-ignore
+    res.status(451).send({ error: error.message });
+  }
 });
 
 app.get('/validate', async (req, res) => {
