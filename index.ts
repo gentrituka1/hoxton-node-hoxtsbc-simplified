@@ -42,8 +42,9 @@ app.post("/signup", async (req, res) => {
           email: req.body.email,
           username: req.body.username,
           password: bcrypt.hashSync(req.body.password),
-        },
-      });
+        }
+      })
+        res.send(newUser);
     }
   } catch (error) {
     //@ts-ignore
