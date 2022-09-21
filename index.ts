@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 const app = express();
@@ -10,6 +11,23 @@ app.use(cors());
 app.use(express.json());
 
 const port = 4000;
+
+const SECRET = "secret";
+
+function getToken(id: number){
+    return jwt.sign({ id }, SECRET, { expiresIn: "5min" });
+}
+
+async function getCurrentUser (token: string){
+    const decodedData = jwt.verify(token, SECRET)
+    const user = await prisma.user.findUnique({
+        // @ts-ignore
+        where: {id: decodedData.id},
+        include: {transactions: true}
+    })
+    return user
+}
+
 
 app.post("/signup", async (req, res) => {
   try {
@@ -51,12 +69,18 @@ app.get("/transactions", async (req, res) => {
   res.send(transactions);
 });
 
-app.get("/users/:id/transactions", async (req, res) => {
-  const transactions = await prisma.transaction.findMany({
-    where: { userId: Number(req.params.id) },
-    include: { user: true },
-  });
-});
+app.get('/validate', async (req, res) => {
+    try {
+        if(req.headers.authorization){
+            const user = await getCurrentUser(req.headers.authorization)
+            // @ts-ignore
+            res.send({user, token: getToken(user.id)})
+        }
+    } catch (error) {
+        // @ts-ignore
+        res.status(400).send({error: error.message})
+    }
+})
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
