@@ -15,7 +15,7 @@ const port = 4000;
 const SECRET = "secret";
 
 function getToken(id: number){
-    return jwt.sign({ id }, SECRET, { expiresIn: "5min" });
+    return jwt.sign({ id }, SECRET, { expiresIn: "5 minutes" });
 }
 
 async function getCurrentUser (token: string){
@@ -28,11 +28,15 @@ async function getCurrentUser (token: string){
     return user
 }
 
+app.get("/users", async (req, res) => {
+    const users = await prisma.user.findMany({include: {transactions: true}});
+    res.json(users);
+})
 
 app.post("/signup", async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { email: req.body.email } || { username: req.body.username },
+      where: { email: req.body.email } || { username: req.body.username }
     });
     if (user) {
       res.status(400).send("User already exists");
@@ -44,7 +48,7 @@ app.post("/signup", async (req, res) => {
           password: bcrypt.hashSync(req.body.password),
         }
       })
-        res.send(newUser);
+        res.send({newUser, token: getToken(newUser.id)});
     }
   } catch (error) {
     //@ts-ignore

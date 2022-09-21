@@ -24,6 +24,6 @@ model Transaction {
   id     Int    @id @default(autoincrement())
   reason String
   amount Int
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId Int
 }
