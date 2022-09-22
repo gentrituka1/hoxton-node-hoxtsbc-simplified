@@ -39,7 +39,7 @@ app.post("/signup", async (req, res) => {
       where: { email: req.body.email } || { username: req.body.username }
     });
     if (user) {
-      res.status(400).send("User already exists");
+      res.status(401).send("User already exists");
     } else {
       const newUser = await prisma.user.create({
         data: {
@@ -48,7 +48,7 @@ app.post("/signup", async (req, res) => {
           password: bcrypt.hashSync(req.body.password),
         }
       })
-        res.send({newUser, token: getToken(newUser.id)});
+        res.send({user: user, token: getToken(newUser.id)});
     }
   } catch (error) {
     //@ts-ignore
