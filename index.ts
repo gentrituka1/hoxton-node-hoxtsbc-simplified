@@ -3,6 +3,9 @@ import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import env from "dotenv";
+
+env.config();
 
 const prisma = new PrismaClient();
 const app = express();
@@ -12,7 +15,7 @@ app.use(express.json());
 
 const port = 4000;
 
-const SECRET = "secret";
+const SECRET = process.env.SECRET!;
 
 function getToken(id: number) {
   return jwt.sign({ id }, SECRET, { expiresIn: "5 minutes" });
