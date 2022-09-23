@@ -65,7 +65,7 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const users = await prisma.user.findMany({
-    where: { OR: [{ username: req.body.login }, { email: req.body.login }] },
+    where: {OR: [{ username: req.body.login }, { email: req.body.login }]},
     include: { transactions: true }
   });
   const user = users[0];
